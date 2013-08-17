@@ -7,8 +7,9 @@
 Signature   = "$Windows NT$"
 Class       = NetTrans
 ClassGUID   = {4d36e975-e325-11ce-bfc1-08002be10318}
+CatalogFile = npf6x.cat
 Provider    = %Insecure%
-DriverVer=08/05/2013,12.19.29.195
+DriverVer=08/17/2013,14.52.36.712
 
 [Manufacturer]
 %Insecure%=Insecure,NTx86,NTia64,NTamd64
