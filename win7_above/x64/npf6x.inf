@@ -9,7 +9,7 @@ Class           = NetService
 ClassGUID       = {4D36E974-E325-11CE-BFC1-08002BE10318}
 CatalogFile     = npf6x.cat
 Provider        = %Insecure%
-DriverVer=08/19/2013,16.34.58.967
+DriverVer=08/20/2013,14.58.17.873
 
 
 [Manufacturer]
@@ -126,6 +126,6 @@ DelService=npf,0x200 ; SPSVCINST_STOPSERVICE
 HKR, Parameters, NdisImPlatformBindingOptions,0x00010001,0 ; Subscribe to default behavior
 
 [Strings]
-Insecure = "InSecure.Com, LLC."
+Insecure = "Nmap Project"
 NPF6X_Desc = "WinPcap Lightweight Filter Driver (NPF)"
-NPF6X_HelpText = "A NDIS 6.x kernel driver to support packet capturing under Win7 & Win8"
+NPF6X_HelpText = "A NDIS 6 kernel filter driver to support packet capturing under Windows 7 & Windows 8"
