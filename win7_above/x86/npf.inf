@@ -9,7 +9,7 @@ Class           = NetService
 ClassGUID       = {4D36E974-E325-11CE-BFC1-08002BE10318}
 CatalogFile     = npf.cat
 Provider        = %Insecure%
-DriverVer=08/27/2013,21.48.4.274
+DriverVer=09/01/2013,23.12.56.258
 
 
 [Manufacturer]
