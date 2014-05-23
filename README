@@ -1,0 +1,6 @@
+Derived from https://svn.nmap.org/nmap/mswin32/winpcap
+
+This replaces the upstream WinPCAP 4.1.3 installer, adding a /S silent install
+feature for doing unattended installation.
+
+Modified to auto-stop the Boundary meter, added Boundary signatures and branding.
