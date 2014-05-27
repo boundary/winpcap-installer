@@ -27,10 +27,10 @@ SetCompressor /SOLID /FINAL lzma
 ;General
 
 ; The name of the installer
-Name "WinPcap (Nmap) 4.1.3"
+Name "WinPcap (Boundary Meter) 4.1.3"
 
 ; The file to write
-OutFile "winpcap-nmap-4.13.exe"
+OutFile "winpcap-boundary-meter-4.1.3.exe"
 
 RequestExecutionLevel admin
 
@@ -47,7 +47,7 @@ FunctionEnd
 VIProductVersion "4.1.0.2980"
 VIAddVersionKey /LANG=1033 "FileVersion" "4.1.0.2980"
 VIAddVersionKey /LANG=1033 "ProductName" "WinPcap"
-VIAddVersionKey /LANG=1033 "FileDescription" "WinPcap 4.1.3 installer"
+VIAddVersionKey /LANG=1033 "FileDescription" "WinPcap 4.1.3 for Boundary installer"
 VIAddVersionKey /LANG=1033 "LegalCopyright" ""
 
 ;--------------------------------
@@ -157,9 +157,9 @@ Function .onInit
     IfFileExists "$SYSDIR\wpcap.dll" silent_checks
     return
     silent_checks:
-      ; check for the presence of Nmap's custom WinPcapInst registry key:
+      ; check for the presence of Boundary's custom WinPcapInst registry key:
       ReadRegStr $0 "HKLM" "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "InstalledBy"
-      StrCmp $0 "Nmap" silent_uninstall winpcap_installedby_keys_not_present
+      StrCmp $0 "Boundary" silent_uninstall winpcap_installedby_keys_not_present
 
       winpcap_installedby_keys_not_present:
       ; check for the presence of WinPcapInst's UninstallString
@@ -185,7 +185,7 @@ Function .onInit
 
       ; because we've deleted their uninstaller, skip the next
       ; registry key check (we'll still need to overwrite stuff)
-      Goto winpcap-nmap_keys_not_present
+      Goto winpcap-boundary_keys_not_present
 
       winpcap_keys_not_present:
 
@@ -193,16 +193,17 @@ Function .onInit
       ; (we got this far so the official WinPcap wasn't installed)
       ; and use our uninstaller to (magically) silently uninstall
       ; everything cleanly and avoid having to overwrite files
-      ReadRegStr $0 "HKLM" "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\winpcap-nmap" "UninstallString"
-      StrCmp $0 "" winpcap-nmap_keys_not_present silent_uninstall
+      ReadRegStr $0 "HKLM" "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\winpcap-boundary" "UninstallString"
+      StrCmp $0 "" winpcap-boundary_keys_not_present silent_uninstall
 
-      winpcap-nmap_keys_not_present:
+      winpcap-boundary_keys_not_present:
 
       ; setoverwrite on to try and avoid any problems when trying to install the files
       ; wpcap.dll is still present at this point, but unclear where it came from
       SetOverwrite on
 
       ; try to ensure that npf has been stopped before we install/overwrite files
+	  nsExec::Exec 'net stop "Boundary Meter"'
       ExecWait '"net stop npf"'
 
       return
@@ -249,7 +250,7 @@ Function .onInit
 
     no_uninstallstring:
     ; didn't find an UninstallString, check for our old UninstallString and if uninstall.exe exists:
-    ReadRegStr $0 "HKLM" "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\winpcap-nmap" "UninstallString"
+    ReadRegStr $0 "HKLM" "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\winpcap-boundary" "UninstallString"
     StrCmp $0 "" still_no_uninstallstring
     IfFileExists "$0" old_uninstaller_exists still_no_uninstallstring
     old_uninstaller_exists:
@@ -358,6 +359,7 @@ Section "WinPcap" SecWinPcap
 
   ; stop the service, in case it's still registered, so files can be
   ; safely overwritten and the service can be deleted.
+  nsExec::Exec 'net stop "Boundary Meter"'
   nsExec::Exec "net stop npf"
 
   ; NB: We may need to introduce a check here to ensure that NPF
@@ -457,19 +459,19 @@ Section "WinPcap" SecWinPcap
 
     ; Write the rest of the uninstall keys for Windows
 
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "DisplayName" "WinPcap 4.1.3"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "DisplayName" "WinPcap for Boundary Meter 4.1.3"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "DisplayVersion" "4.1.0.2980"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "Publisher" "CACE Technologies"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "URLInfoAbout" "http://www.cacetech.com"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "Publisher" "Boundary, Inc."
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "URLInfoAbout" "http://boundary.com/"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "URLUpdateInfo" "http://www.winpcap.org"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "VersionMajor" "4"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "VersionMinor" "1"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "InstalledBy" "Nmap"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "InstalledBy" "Boundary"
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "NoModify" 1
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "NoRepair" 1
 
-  ; delete our  legacy winpcap-nmap keys if they still exist (e.g. official 4.0.2 force installed over our 4.0.2):
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\winpcap-nmap"
+  ; delete our  legacy winpcap-boundary keys if they still exist (e.g. official 4.0.2 force installed over our 4.0.2):
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\winpcap-boundary"
 
 SectionEnd ; end the section
 
@@ -480,12 +482,13 @@ SectionEnd ; end the section
 Section "Uninstall"
 
   ; stop npf before we delete the service from the registry
+  nsExec::Exec 'net stop "Boundary Meter"'
   nsExec::Exec "net stop npf"
   ; unregister the driver as a system service using Windows API calls, so it works on Windows 2000
   Call un.registerServiceAPI
 
-  ; delete our winpcap-nmap and any WinPcapInst registry keys
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\winpcap-nmap"
+  ; delete our winpcap-boundary and any WinPcapInst registry keys
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\winpcap-boundary"
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst"
   DeleteRegKey HKLM "Software\WinPcap"
 
