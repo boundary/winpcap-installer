@@ -1,7 +1,8 @@
 ;; Custom winpcap for nmap
 ;; Recognizes the options (case sensitive):
-;;   /S              silent install
-;;   /NPFSTARTUP=NO  start NPF now and at startup (only has effect with /S)
+;;   /S                silent install
+;;   /NPFSTARTUP=NO    start NPF now and at startup (only has effect with /S)
+;;   /NPFSTARTUP=AUTO  do not start NPF now, rather at startup (only has effect with /S)
 
 ;; Started by Doug Hoyte, April 2006
 
@@ -349,6 +350,9 @@ FunctionEnd
 
 Function autoStartWinPcap
     WriteRegDWORD HKLM "SYSTEM\CurrentControlSet\Services\NPF" "Start" 2
+FunctionEnd
+
+Function startWinPcap
     nsExec::Exec "net start npf"
 FunctionEnd
 
@@ -451,11 +455,13 @@ Section "WinPcap" SecWinPcap
     WriteRegDWORD HKLM "SYSTEM\CurrentControlSet\Services\NPF" "Start" 3
 
     ; automatically start the service if performing a silent install, unless
-    ; /NPFSTARTUP=NO was given.
-    IfSilent 0 skip_auto_start
-    StrCmp $npf_startup "NO" skip_auto_start
+    ; /NPFSTARTUP=NO or /NPFSTART=AUTO was given.
+    IfSilent 0 skip_ahead
+    StrCmp $npf_startup "NO" skip_ahead
       Call autoStartWinPcap
-    skip_auto_start:
+    StrCmp $npf_startup "AUTO" skip_ahead
+      Call startWinPcap
+    skip_ahead:
 
     ; Write the rest of the uninstall keys for Windows
 
