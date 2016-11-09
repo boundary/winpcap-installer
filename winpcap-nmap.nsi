@@ -28,10 +28,10 @@ SetCompressor /SOLID /FINAL lzma
 ;General
 
 ; The name of the installer
-Name "WinPcap (Boundary Meter) 4.1.3"
+Name "WinPcap (BMC TrueSight Meter) 4.1.3"
 
 ; The file to write
-OutFile "winpcap-boundary-meter-4.1.3.exe"
+OutFile "winpcap-truesight-meter-4.1.3.exe"
 
 RequestExecutionLevel admin
 
@@ -48,7 +48,7 @@ FunctionEnd
 VIProductVersion "4.1.0.2980"
 VIAddVersionKey /LANG=1033 "FileVersion" "4.1.0.2980"
 VIAddVersionKey /LANG=1033 "ProductName" "WinPcap"
-VIAddVersionKey /LANG=1033 "FileDescription" "WinPcap 4.1.3 for Boundary installer"
+VIAddVersionKey /LANG=1033 "FileDescription" "WinPcap 4.1.3 for BMC TrueSight installer"
 VIAddVersionKey /LANG=1033 "LegalCopyright" ""
 
 ;--------------------------------
@@ -160,6 +160,9 @@ Function .onInit
     silent_checks:
       ; check for the presence of Boundary's custom WinPcapInst registry key:
       ReadRegStr $0 "HKLM" "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "InstalledBy"
+	  
+	  ; we are changing the installed by from Boundary to TrueSight, add un-install logic here
+	  StrCmp $0 "TrueSight" silent_uninstall
       StrCmp $0 "Boundary" silent_uninstall winpcap_installedby_keys_not_present
 
       winpcap_installedby_keys_not_present:
@@ -205,6 +208,7 @@ Function .onInit
 
       ; try to ensure that npf has been stopped before we install/overwrite files
 	  nsExec::Exec 'net stop "Boundary Meter"'
+	  nsExec::Exec 'net stop "TrueSight Meter"'
       ExecWait '"net stop npf"'
 
       return
@@ -364,6 +368,7 @@ Section "WinPcap" SecWinPcap
   ; stop the service, in case it's still registered, so files can be
   ; safely overwritten and the service can be deleted.
   nsExec::Exec 'net stop "Boundary Meter"'
+  nsExec::Exec 'net stop "TrueSight Meter"'
   nsExec::Exec "net stop npf"
 
   ; NB: We may need to introduce a check here to ensure that NPF
@@ -465,14 +470,14 @@ Section "WinPcap" SecWinPcap
 
     ; Write the rest of the uninstall keys for Windows
 
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "DisplayName" "WinPcap for Boundary Meter 4.1.3"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "DisplayName" "WinPcap for BMC TrueSight Meter 4.1.3"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "DisplayVersion" "4.1.0.2980"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "Publisher" "Boundary, Inc."
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "URLInfoAbout" "http://boundary.com/"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "Publisher" "BMC Software, Inc"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "URLInfoAbout" "http://www.winpcap.org/"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "URLUpdateInfo" "http://www.winpcap.org"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "VersionMajor" "4"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "VersionMinor" "1"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "InstalledBy" "Boundary"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "InstalledBy" "TrueSight"
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "NoModify" 1
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinPcapInst" "NoRepair" 1
 
@@ -489,6 +494,7 @@ Section "Uninstall"
 
   ; stop npf before we delete the service from the registry
   nsExec::Exec 'net stop "Boundary Meter"'
+  nsExec::Exec 'net stop "TrueSight Meter"'
   nsExec::Exec "net stop npf"
   ; unregister the driver as a system service using Windows API calls, so it works on Windows 2000
   Call un.registerServiceAPI
